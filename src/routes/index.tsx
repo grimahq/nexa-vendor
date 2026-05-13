@@ -82,7 +82,7 @@ function HomePage() {
           <p className="mt-4 text-xs text-muted-foreground">Free to start · No card required · KYC unlocks the verified badge</p>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 pb-32 sm:px-6">
+        <section id="features" className="mx-auto max-w-7xl px-4 pb-32 sm:px-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
               <motion.div

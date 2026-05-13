@@ -19,9 +19,9 @@ export function SiteHeader() {
           <Link to="/explore" className="text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
             Explore stores
           </Link>
-          <Link to="/pricing" className="text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+          <a href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">
             Why Nexa
-          </Link>
+          </a>
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
