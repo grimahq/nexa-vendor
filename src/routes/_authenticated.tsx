@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
-      throw redirect({ to: "/login", search: { redirect: location.href } as never });
+      throw redirect({ to: "/login" });
     }
   },
   component: AuthedLayout,
@@ -38,7 +38,7 @@ function AuthedLayout() {
       .eq("owner_id", user.id)
       .maybeSingle()
       .then(({ data }) => setHasStore(!!data));
-  }, [user]);
+  }, [user, loc.pathname]);
 
   useEffect(() => {
     if (hasStore === false && loc.pathname !== "/onboarding") {
