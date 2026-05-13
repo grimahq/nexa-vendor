@@ -26,10 +26,7 @@ function ProductPage() {
       if (!s) return;
       setStore(s as S);
       const { data: p } = await supabase.from("products").select("id,title,slug,description,sell_price,stock,images,icon").eq("store_id", s.id).eq("slug", productSlug).maybeSingle();
-      if (p) {
-        setProduct(p as P);
-        await supabase.from("products").update({ views: (p as { views?: number }).views ? undefined : undefined }).eq("id", p.id);
-      }
+      if (p) setProduct(p as P);
     })();
   }, [slug, productSlug]);
 
