@@ -40,18 +40,20 @@ function AuthedLayout() {
       .then(({ data }) => setHasStore(!!data));
   }, [user, loc.pathname]);
 
+  const isBuyerArea = loc.pathname.startsWith("/me");
+
   useEffect(() => {
-    if (hasStore === false && loc.pathname !== "/onboarding") {
+    if (hasStore === false && !isBuyerArea && loc.pathname !== "/onboarding") {
       nav({ to: "/onboarding" });
     }
-  }, [hasStore, loc.pathname, nav]);
+  }, [hasStore, loc.pathname, nav, isBuyerArea]);
 
   if (loading || hasStore === null) {
     return <div className="dark flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
   }
 
-  // Onboarding: render without sidebar
-  if (loc.pathname === "/onboarding") {
+  // Onboarding or buyer-only area: render without vendor sidebar
+  if (loc.pathname === "/onboarding" || isBuyerArea) {
     return (
       <div className="dark min-h-screen bg-background text-foreground">
         <Outlet />
