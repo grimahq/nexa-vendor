@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TrackTokenRouteImport } from './routes/track.$token'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProductsRouteImport } from './routes/_authenticated/products'
@@ -22,6 +23,8 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
 import { Route as AuthenticatedProductsNewRouteImport } from './routes/_authenticated/products.new'
+import { Route as AuthenticatedMeOrdersRouteImport } from './routes/_authenticated/me.orders'
+import { Route as AuthenticatedMeFeedRouteImport } from './routes/_authenticated/me.feed'
 import { Route as SSlugPProductSlugRouteImport } from './routes/s.$slug.p.$productSlug'
 
 const SignupRoute = SignupRouteImport.update({
@@ -46,6 +49,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackTokenRoute = TrackTokenRouteImport.update({
+  id: '/track/$token',
+  path: '/track/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSlugRoute = SSlugRouteImport.update({
@@ -89,6 +97,16 @@ const AuthenticatedProductsNewRoute =
     path: '/new',
     getParentRoute: () => AuthenticatedProductsRoute,
   } as any)
+const AuthenticatedMeOrdersRoute = AuthenticatedMeOrdersRouteImport.update({
+  id: '/me/orders',
+  path: '/me/orders',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeFeedRoute = AuthenticatedMeFeedRouteImport.update({
+  id: '/me/feed',
+  path: '/me/feed',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const SSlugPProductSlugRoute = SSlugPProductSlugRouteImport.update({
   id: '/p/$productSlug',
   path: '/p/$productSlug',
@@ -107,6 +125,9 @@ export interface FileRoutesByFullPath {
   '/products': typeof AuthenticatedProductsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/s/$slug': typeof SSlugRouteWithChildren
+  '/track/$token': typeof TrackTokenRoute
+  '/me/feed': typeof AuthenticatedMeFeedRoute
+  '/me/orders': typeof AuthenticatedMeOrdersRoute
   '/products/new': typeof AuthenticatedProductsNewRoute
   '/s/$slug/p/$productSlug': typeof SSlugPProductSlugRoute
 }
@@ -122,6 +143,9 @@ export interface FileRoutesByTo {
   '/products': typeof AuthenticatedProductsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/s/$slug': typeof SSlugRouteWithChildren
+  '/track/$token': typeof TrackTokenRoute
+  '/me/feed': typeof AuthenticatedMeFeedRoute
+  '/me/orders': typeof AuthenticatedMeOrdersRoute
   '/products/new': typeof AuthenticatedProductsNewRoute
   '/s/$slug/p/$productSlug': typeof SSlugPProductSlugRoute
 }
@@ -139,6 +163,9 @@ export interface FileRoutesById {
   '/_authenticated/products': typeof AuthenticatedProductsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/s/$slug': typeof SSlugRouteWithChildren
+  '/track/$token': typeof TrackTokenRoute
+  '/_authenticated/me/feed': typeof AuthenticatedMeFeedRoute
+  '/_authenticated/me/orders': typeof AuthenticatedMeOrdersRoute
   '/_authenticated/products/new': typeof AuthenticatedProductsNewRoute
   '/s/$slug/p/$productSlug': typeof SSlugPProductSlugRoute
 }
@@ -156,6 +183,9 @@ export interface FileRouteTypes {
     | '/products'
     | '/settings'
     | '/s/$slug'
+    | '/track/$token'
+    | '/me/feed'
+    | '/me/orders'
     | '/products/new'
     | '/s/$slug/p/$productSlug'
   fileRoutesByTo: FileRoutesByTo
@@ -171,6 +201,9 @@ export interface FileRouteTypes {
     | '/products'
     | '/settings'
     | '/s/$slug'
+    | '/track/$token'
+    | '/me/feed'
+    | '/me/orders'
     | '/products/new'
     | '/s/$slug/p/$productSlug'
   id:
@@ -187,6 +220,9 @@ export interface FileRouteTypes {
     | '/_authenticated/products'
     | '/_authenticated/settings'
     | '/s/$slug'
+    | '/track/$token'
+    | '/_authenticated/me/feed'
+    | '/_authenticated/me/orders'
     | '/_authenticated/products/new'
     | '/s/$slug/p/$productSlug'
   fileRoutesById: FileRoutesById
@@ -198,6 +234,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   SSlugRoute: typeof SSlugRouteWithChildren
+  TrackTokenRoute: typeof TrackTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -235,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/$token': {
+      id: '/track/$token'
+      path: '/track/$token'
+      fullPath: '/track/$token'
+      preLoaderRoute: typeof TrackTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
@@ -293,6 +337,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsNewRouteImport
       parentRoute: typeof AuthenticatedProductsRoute
     }
+    '/_authenticated/me/orders': {
+      id: '/_authenticated/me/orders'
+      path: '/me/orders'
+      fullPath: '/me/orders'
+      preLoaderRoute: typeof AuthenticatedMeOrdersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me/feed': {
+      id: '/_authenticated/me/feed'
+      path: '/me/feed'
+      fullPath: '/me/feed'
+      preLoaderRoute: typeof AuthenticatedMeFeedRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/s/$slug/p/$productSlug': {
       id: '/s/$slug/p/$productSlug'
       path: '/p/$productSlug'
@@ -323,6 +381,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
   AuthenticatedProductsRoute: typeof AuthenticatedProductsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedMeFeedRoute: typeof AuthenticatedMeFeedRoute
+  AuthenticatedMeOrdersRoute: typeof AuthenticatedMeOrdersRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -332,6 +392,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
   AuthenticatedProductsRoute: AuthenticatedProductsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedMeFeedRoute: AuthenticatedMeFeedRoute,
+  AuthenticatedMeOrdersRoute: AuthenticatedMeOrdersRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -355,17 +417,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   SSlugRoute: SSlugRouteWithChildren,
+  TrackTokenRoute: TrackTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

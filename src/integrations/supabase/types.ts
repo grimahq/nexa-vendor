@@ -464,7 +464,13 @@ export type Database = {
       app_role: "admin" | "vendor" | "buyer"
       fulfillment_type: "pickup" | "delivery"
       kyc_status: "none" | "pending" | "approved" | "rejected"
-      order_status: "pending" | "paid" | "fulfilled" | "cancelled"
+      order_status:
+        | "pending"
+        | "paid"
+        | "confirmed"
+        | "fulfilled"
+        | "delivered"
+        | "cancelled"
       payment_status: "pending" | "success" | "failed"
     }
     CompositeTypes: {
@@ -596,7 +602,14 @@ export const Constants = {
       app_role: ["admin", "vendor", "buyer"],
       fulfillment_type: ["pickup", "delivery"],
       kyc_status: ["none", "pending", "approved", "rejected"],
-      order_status: ["pending", "paid", "fulfilled", "cancelled"],
+      order_status: [
+        "pending",
+        "paid",
+        "confirmed",
+        "fulfilled",
+        "delivered",
+        "cancelled",
+      ],
       payment_status: ["pending", "success", "failed"],
     },
   },
