@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, MessageCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { ShieldCheck, MessageCircle, ArrowLeft, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/s/$slug")({
   head: () => ({ meta: [{ title: "Store — Nexa Vendors" }] }),
@@ -15,9 +17,12 @@ type P = { id: string; title: string; slug: string; sell_price: number; stock: n
 
 function StorePage() {
   const { slug } = Route.useParams();
+  const { user } = useAuth();
   const [store, setStore] = useState<S | null>(null);
   const [products, setProducts] = useState<P[]>([]);
   const [notFound, setNotFound] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followers, setFollowers] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -26,8 +31,28 @@ function StorePage() {
       setStore(s as S);
       const { data: p } = await supabase.from("products").select("id,title,slug,sell_price,stock,images,icon").eq("store_id", s.id).eq("active", true).order("created_at", { ascending: false });
       setProducts((p ?? []) as P[]);
+      const { count } = await supabase.from("follows").select("id", { count: "exact", head: true }).eq("store_id", s.id);
+      setFollowers(count ?? 0);
+      if (user) {
+        const { data: f } = await supabase.from("follows").select("id").eq("store_id", s.id).eq("buyer_id", user.id).maybeSingle();
+        setFollowing(!!f);
+      }
     })();
-  }, [slug]);
+  }, [slug, user]);
+
+  async function toggleFollow() {
+    if (!user) return toast.info("Sign in to follow stores");
+    if (!store) return;
+    if (following) {
+      await supabase.from("follows").delete().eq("store_id", store.id).eq("buyer_id", user.id);
+      setFollowing(false);
+      setFollowers((n) => Math.max(0, n - 1));
+    } else {
+      await supabase.from("follows").insert({ store_id: store.id, buyer_id: user.id });
+      setFollowing(true);
+      setFollowers((n) => n + 1);
+    }
+  }
 
   if (notFound) {
     return (
@@ -73,6 +98,13 @@ function StorePage() {
             </div>
           </motion.div>
           {store.tagline && <p className="mt-4 max-w-2xl text-lg text-muted-foreground">{store.tagline}</p>}
+          <div className="mt-5 flex items-center gap-3">
+            <Button onClick={toggleFollow} size="sm" variant={following ? "outline" : "default"} className={following ? "" : "bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90"}>
+              <Heart className={`mr-1.5 h-4 w-4 ${following ? "fill-rose-500 text-rose-500" : ""}`} />
+              {following ? "Following" : "Follow"}
+            </Button>
+            <span className="text-xs text-muted-foreground">{followers} {followers === 1 ? "follower" : "followers"}</span>
+          </div>
         </div>
       </section>
 

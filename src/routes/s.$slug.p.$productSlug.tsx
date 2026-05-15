@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Minus, Plus, MessageCircle, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Minus, Plus, MessageCircle, ShoppingBag, Heart } from "lucide-react";
+import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/s/$slug/p/$productSlug")({
@@ -16,9 +18,13 @@ type P = { id: string; title: string; slug: string; description: string | null; 
 
 function ProductPage() {
   const { slug, productSlug } = Route.useParams();
+  const { user } = useAuth();
   const [store, setStore] = useState<S | null>(null);
   const [product, setProduct] = useState<P | null>(null);
   const [qty, setQty] = useState(1);
+  const [open, setOpen] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -26,9 +32,30 @@ function ProductPage() {
       if (!s) return;
       setStore(s as S);
       const { data: p } = await supabase.from("products").select("id,title,slug,description,sell_price,stock,images,icon").eq("store_id", s.id).eq("slug", productSlug).maybeSingle();
-      if (p) setProduct(p as P);
+      if (!p) return;
+      setProduct(p as P);
+      const { count } = await supabase.from("likes").select("id", { count: "exact", head: true }).eq("product_id", p.id);
+      setLikes(count ?? 0);
+      if (user) {
+        const { data: my } = await supabase.from("likes").select("id").eq("product_id", p.id).eq("buyer_id", user.id).maybeSingle();
+        setLiked(!!my);
+      }
     })();
-  }, [slug, productSlug]);
+  }, [slug, productSlug, user]);
+
+  async function toggleLike() {
+    if (!user) return toast.info("Sign in to like products");
+    if (!product) return;
+    if (liked) {
+      await supabase.from("likes").delete().eq("product_id", product.id).eq("buyer_id", user.id);
+      setLiked(false);
+      setLikes((n) => Math.max(0, n - 1));
+    } else {
+      await supabase.from("likes").insert({ product_id: product.id, buyer_id: user.id });
+      setLiked(true);
+      setLikes((n) => n + 1);
+    }
+  }
 
   if (!store || !product) return <div className="dark flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
 
@@ -39,10 +66,13 @@ function ProductPage() {
   return (
     <div className="dark min-h-screen bg-background text-foreground" style={store.brand_color ? { ["--primary" as never]: store.brand_color } : undefined}>
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/70 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/s/$slug" params={{ slug }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> {store.name}
           </Link>
+          <button onClick={toggleLike} className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-3 py-1.5 text-xs backdrop-blur">
+            <Heart className={`h-3.5 w-3.5 ${liked ? "fill-rose-500 text-rose-500" : ""}`} /> {likes}
+          </button>
         </div>
       </header>
 
@@ -77,7 +107,8 @@ function ProductPage() {
           <Button
             size="lg"
             className="h-14 w-full bg-gradient-primary text-base text-primary-foreground shadow-glow hover:opacity-90"
-            onClick={() => toast.info("Checkout coming soon — chat the seller for now")}
+            onClick={() => setOpen(true)}
+            disabled={product.stock <= 0}
           >
             <ShoppingBag className="mr-2 h-5 w-5" /> Order now · ₦{total.toLocaleString()}
           </Button>
@@ -90,6 +121,8 @@ function ProductPage() {
           )}
         </div>
       </main>
+
+      <CheckoutDialog open={open} onOpenChange={setOpen} store={store} product={product} qty={qty} />
     </div>
   );
 }
