@@ -98,6 +98,13 @@ function StorePage() {
             </div>
           </motion.div>
           {store.tagline && <p className="mt-4 max-w-2xl text-lg text-muted-foreground">{store.tagline}</p>}
+          <div className="mt-5 flex items-center gap-3">
+            <Button onClick={toggleFollow} size="sm" variant={following ? "outline" : "default"} className={following ? "" : "bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90"}>
+              <Heart className={`mr-1.5 h-4 w-4 ${following ? "fill-rose-500 text-rose-500" : ""}`} />
+              {following ? "Following" : "Follow"}
+            </Button>
+            <span className="text-xs text-muted-foreground">{followers} {followers === 1 ? "follower" : "followers"}</span>
+          </div>
         </div>
       </section>
 
