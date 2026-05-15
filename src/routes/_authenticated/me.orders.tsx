@@ -39,7 +39,7 @@ function MyOrders() {
       const byId = new Map((stores ?? []).map((s) => [s.id, s]));
       setRows(
         (data ?? []).map((o) => ({
-          ...(o as never),
+          ...(o as unknown as Omit<Row, "store">),
           store: (byId.get(o.store_id) as { name: string; slug: string } | undefined) ?? null,
         })),
       );

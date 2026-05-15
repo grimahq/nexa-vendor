@@ -52,7 +52,7 @@ function TrackPage() {
         .select("name,slug,whatsapp,logo_url")
         .eq("id", data.store_id)
         .maybeSingle();
-      if (mounted) setOrder({ ...(data as never), store: store as never });
+      if (mounted) setOrder({ ...(data as unknown as Omit<Order, "store">), store: (store as Order["store"]) ?? null });
     }
     load();
     const ch = supabase
