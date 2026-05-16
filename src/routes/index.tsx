@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import {
   ArrowRight, Sparkles, ShoppingBag, MessageCircle, Receipt, ShieldCheck,
-  Zap, Star, Check, ChevronDown, Github, Send, Heart, TrendingUp,
+  Zap, Star, Check, Github, Send, Heart, TrendingUp,
 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MeshBackground } from "@/components/MeshBackground";

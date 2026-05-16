@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
+import { Route as AuthenticatedVerifyRouteImport } from './routes/_authenticated/verify'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProductsRouteImport } from './routes/_authenticated/products'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
@@ -25,6 +26,7 @@ import { Route as AuthenticatedCustomersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProductsNewRouteImport } from './routes/_authenticated/products.new'
 import { Route as AuthenticatedMeOrdersRouteImport } from './routes/_authenticated/me.orders'
 import { Route as AuthenticatedMeFeedRouteImport } from './routes/_authenticated/me.feed'
+import { Route as AuthenticatedAdminKycRouteImport } from './routes/_authenticated/admin.kyc'
 import { Route as SSlugPProductSlugRouteImport } from './routes/s.$slug.p.$productSlug'
 
 const SignupRoute = SignupRouteImport.update({
@@ -60,6 +62,11 @@ const SSlugRoute = SSlugRouteImport.update({
   id: '/s/$slug',
   path: '/s/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedVerifyRoute = AuthenticatedVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -107,6 +114,11 @@ const AuthenticatedMeFeedRoute = AuthenticatedMeFeedRouteImport.update({
   path: '/me/feed',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminKycRoute = AuthenticatedAdminKycRouteImport.update({
+  id: '/admin/kyc',
+  path: '/admin/kyc',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const SSlugPProductSlugRoute = SSlugPProductSlugRouteImport.update({
   id: '/p/$productSlug',
   path: '/p/$productSlug',
@@ -124,8 +136,10 @@ export interface FileRoutesByFullPath {
   '/orders': typeof AuthenticatedOrdersRoute
   '/products': typeof AuthenticatedProductsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/s/$slug': typeof SSlugRouteWithChildren
   '/track/$token': typeof TrackTokenRoute
+  '/admin/kyc': typeof AuthenticatedAdminKycRoute
   '/me/feed': typeof AuthenticatedMeFeedRoute
   '/me/orders': typeof AuthenticatedMeOrdersRoute
   '/products/new': typeof AuthenticatedProductsNewRoute
@@ -142,8 +156,10 @@ export interface FileRoutesByTo {
   '/orders': typeof AuthenticatedOrdersRoute
   '/products': typeof AuthenticatedProductsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/s/$slug': typeof SSlugRouteWithChildren
   '/track/$token': typeof TrackTokenRoute
+  '/admin/kyc': typeof AuthenticatedAdminKycRoute
   '/me/feed': typeof AuthenticatedMeFeedRoute
   '/me/orders': typeof AuthenticatedMeOrdersRoute
   '/products/new': typeof AuthenticatedProductsNewRoute
@@ -162,8 +178,10 @@ export interface FileRoutesById {
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
   '/_authenticated/products': typeof AuthenticatedProductsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/verify': typeof AuthenticatedVerifyRoute
   '/s/$slug': typeof SSlugRouteWithChildren
   '/track/$token': typeof TrackTokenRoute
+  '/_authenticated/admin/kyc': typeof AuthenticatedAdminKycRoute
   '/_authenticated/me/feed': typeof AuthenticatedMeFeedRoute
   '/_authenticated/me/orders': typeof AuthenticatedMeOrdersRoute
   '/_authenticated/products/new': typeof AuthenticatedProductsNewRoute
@@ -182,8 +200,10 @@ export interface FileRouteTypes {
     | '/orders'
     | '/products'
     | '/settings'
+    | '/verify'
     | '/s/$slug'
     | '/track/$token'
+    | '/admin/kyc'
     | '/me/feed'
     | '/me/orders'
     | '/products/new'
@@ -200,8 +220,10 @@ export interface FileRouteTypes {
     | '/orders'
     | '/products'
     | '/settings'
+    | '/verify'
     | '/s/$slug'
     | '/track/$token'
+    | '/admin/kyc'
     | '/me/feed'
     | '/me/orders'
     | '/products/new'
@@ -219,8 +241,10 @@ export interface FileRouteTypes {
     | '/_authenticated/orders'
     | '/_authenticated/products'
     | '/_authenticated/settings'
+    | '/_authenticated/verify'
     | '/s/$slug'
     | '/track/$token'
+    | '/_authenticated/admin/kyc'
     | '/_authenticated/me/feed'
     | '/_authenticated/me/orders'
     | '/_authenticated/products/new'
@@ -288,6 +312,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/verify': {
+      id: '/_authenticated/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof AuthenticatedVerifyRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -351,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeFeedRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/kyc': {
+      id: '/_authenticated/admin/kyc'
+      path: '/admin/kyc'
+      fullPath: '/admin/kyc'
+      preLoaderRoute: typeof AuthenticatedAdminKycRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/s/$slug/p/$productSlug': {
       id: '/s/$slug/p/$productSlug'
       path: '/p/$productSlug'
@@ -381,6 +419,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
   AuthenticatedProductsRoute: typeof AuthenticatedProductsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
+  AuthenticatedAdminKycRoute: typeof AuthenticatedAdminKycRoute
   AuthenticatedMeFeedRoute: typeof AuthenticatedMeFeedRoute
   AuthenticatedMeOrdersRoute: typeof AuthenticatedMeOrdersRoute
 }
@@ -392,6 +432,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
   AuthenticatedProductsRoute: AuthenticatedProductsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
+  AuthenticatedAdminKycRoute: AuthenticatedAdminKycRoute,
   AuthenticatedMeFeedRoute: AuthenticatedMeFeedRoute,
   AuthenticatedMeOrdersRoute: AuthenticatedMeOrdersRoute,
 }
