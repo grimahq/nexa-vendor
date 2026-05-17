@@ -57,56 +57,68 @@ export function StackingProjects() {
       </div>
 
       <div className="relative">
-        {PROJECTS.map((p, i) => {
-          const targetScale = 1 - (PROJECTS.length - 1 - i) * 0.03;
-          const scale = useTransform(
-            scrollYProgress,
-            [i / PROJECTS.length, 1],
-            [1, targetScale],
-          );
-          return (
-            <div
-              key={p.title}
-              className="sticky top-24 md:top-32 h-[85vh]"
-              style={{ top: `${24 + i * 28}px` }}
-            >
-              <motion.div
-                style={{ scale }}
-                className="mx-auto h-full max-w-5xl rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA]/20 bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-elevated"
-              >
-                <div className={`relative grid h-full overflow-hidden rounded-[28px] sm:rounded-[40px] bg-gradient-to-br ${p.accent} p-6 sm:p-10 md:grid-cols-2 md:gap-8`}>
-                  <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-primary opacity-30 blur-3xl" />
-                  <div className="relative flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">{p.tag}</p>
-                      <h3 className="mt-4 font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
-                        {p.title}
-                      </h3>
-                      <p className="mt-4 max-w-md text-sm text-muted-foreground sm:text-base">
-                        {p.body}
-                      </p>
-                    </div>
-                    <Magnet padding={120} strength={5} className="mt-8 inline-block">
-                      <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm backdrop-blur">
-                        <span className="h-2 w-2 rounded-full bg-primary-glow" />
-                        Pillar {i + 1} of {PROJECTS.length}
-                      </div>
-                    </Magnet>
-                  </div>
-
-                  <div className="relative hidden items-center justify-center md:flex">
-                    <Magnet padding={140} strength={6}>
-                      <div className="grid h-44 w-44 place-items-center rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-xl sm:h-56 sm:w-56">
-                        <p.icon className="h-20 w-20 text-primary-glow drop-shadow-[0_0_25px_rgba(167,139,250,0.6)] sm:h-24 sm:w-24" />
-                      </div>
-                    </Magnet>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          );
-        })}
+        {PROJECTS.map((p, i) => (
+          <StackedCard
+            key={p.title}
+            project={p}
+            index={i}
+            total={PROJECTS.length}
+            progress={scrollYProgress}
+          />
+        ))}
       </div>
     </section>
+  );
+}
+
+function StackedCard({
+  project: p,
+  index: i,
+  total,
+  progress,
+}: {
+  project: Project;
+  index: number;
+  total: number;
+  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+}) {
+  const targetScale = 1 - (total - 1 - i) * 0.03;
+  const scale = useTransform(progress, [i / total, 1], [1, targetScale]);
+  return (
+    <div className="sticky h-[85vh]" style={{ top: `${96 + i * 28}px` }}>
+      <motion.div
+        style={{ scale }}
+        className="mx-auto h-full max-w-5xl rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA]/20 bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-elevated"
+      >
+        <div className={`relative grid h-full overflow-hidden rounded-[28px] sm:rounded-[40px] bg-gradient-to-br ${p.accent} p-6 sm:p-10 md:grid-cols-2 md:gap-8`}>
+          <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-primary opacity-30 blur-3xl" />
+          <div className="relative flex flex-col justify-between">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">{p.tag}</p>
+              <h3 className="mt-4 font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+                {p.title}
+              </h3>
+              <p className="mt-4 max-w-md text-sm text-muted-foreground sm:text-base">
+                {p.body}
+              </p>
+            </div>
+            <Magnet padding={120} strength={5} className="mt-8 inline-block">
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm backdrop-blur">
+                <span className="h-2 w-2 rounded-full bg-primary-glow" />
+                Pillar {i + 1} of {total}
+              </div>
+            </Magnet>
+          </div>
+
+          <div className="relative hidden items-center justify-center md:flex">
+            <Magnet padding={140} strength={6}>
+              <div className="grid h-44 w-44 place-items-center rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-xl sm:h-56 sm:w-56">
+                <p.icon className="h-20 w-20 text-primary-glow drop-shadow-[0_0_25px_rgba(167,139,250,0.6)] sm:h-24 sm:w-24" />
+              </div>
+            </Magnet>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
