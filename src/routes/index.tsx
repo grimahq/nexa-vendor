@@ -208,6 +208,63 @@ function HomePage() {
         </div>
       </section>
 
+      {/* ===== STACKING PROJECTS ===== */}
+      <StackingProjects />
+
+      {/* ===== VERIFIED BRANDS ===== */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <div className="mb-10 flex flex-col items-center text-center">
+          <Badge>Verified on Nexa</Badge>
+          <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            Brands buyers <span className="text-gradient">already trust</span>
+          </h2>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            Real Nigerian vendors running their entire WhatsApp business on Nexa.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { name: "Mama Tee Foods", cat: "Food · Lagos", emoji: "🍲" },
+            { name: "Lumen Thrift", cat: "Fashion · Abuja", emoji: "👗" },
+            { name: "Glow by Ada", cat: "Beauty · PH", emoji: "💄" },
+            { name: "ChiAffiliate", cat: "Affiliate · Owerri", emoji: "🔗" },
+          ].map((b, i) => (
+            <Magnet key={b.name} padding={60} strength={8}>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                className="glass rounded-3xl border border-border/40 p-5 shadow-soft transition-shadow hover:shadow-elevated"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-2xl shadow-glow">
+                    {b.emoji}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate font-semibold">{b.name}</p>
+                      <ShieldCheck className="h-3.5 w-3.5 shrink-0 fill-primary text-background" />
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">{b.cat}</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1"><Star className="h-3 w-3 fill-warning text-warning" /> 4.9</span>
+                  <span>Verified</span>
+                </div>
+              </motion.div>
+            </Magnet>
+          ))}
+        </div>
+        <div className="mt-8 flex justify-center">
+          <Button asChild variant="outline" className="border-border/60 bg-card/40 backdrop-blur">
+            <Link to="/explore">See all verified stores <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
+        </div>
+      </section>
+
+
       {/* ===== FEATURE — VENDORS ===== */}
       <section id="features" className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
