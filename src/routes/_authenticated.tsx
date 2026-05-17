@@ -33,6 +33,7 @@ function AuthedLayout() {
 
   useEffect(() => {
     if (!user) return;
+    setHasStore(null);
     supabase
       .from("stores")
       .select("id")
