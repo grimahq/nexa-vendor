@@ -14,6 +14,8 @@ import {
 import heroPhone from "@/assets/hero-phone-3d.png";
 import phonesRow from "@/assets/phones-row-3d.png";
 import featurePhone from "@/assets/feature-catalog-3d.png";
+import { StackingProjects } from "@/components/StackingProjects";
+import { Magnet } from "@/components/Magnet";
 
 export const Route = createFileRoute("/")({
   head: () => ({
