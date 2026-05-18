@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag, CreditCard } from "lucide-react";
+import { buildCheckoutUrl } from "@/integrations/moniepoint";
 
 type Props = {
   open: boolean;
@@ -32,7 +33,7 @@ export function CheckoutDialog({ open, onOpenChange, store, product, qty }: Prop
 
   const total = qty * Number(product.sell_price);
 
-  async function placeOrder() {
+  async function placeOrder(payNow: boolean) {
     if (!name.trim() || !phone.trim()) return toast.error("Name and phone required");
     if (fulfillment === "delivery" && !address.trim()) return toast.error("Delivery address required");
     setSubmitting(true);
@@ -56,9 +57,20 @@ export function CheckoutDialog({ open, onOpenChange, store, product, qty }: Prop
     setSubmitting(false);
     if (error || !data) return toast.error(error?.message ?? "Could not place order");
     toast.success("Order placed! Redirecting…");
-    if (store.whatsapp) {
+    const trackUrl = `${window.location.origin}/track/${data.tracking_token}`;
+    if (payNow) {
+      // Moniepoint hosted checkout (stub URL until credentials arrive)
+      const url = buildCheckoutUrl({
+        amount: total,
+        reference: data.id,
+        customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || undefined },
+        redirectUrl: trackUrl,
+        merchantCode: store.id, // until vendor sets a real Moniepoint code
+      });
+      window.open(url, "_blank");
+    } else if (store.whatsapp) {
       const msg = encodeURIComponent(
-        `Hi ${store.name}, I just placed an order:\n${qty}× ${product.title}\nTotal: ₦${total.toLocaleString()}\nName: ${name}\nTrack: ${window.location.origin}/track/${data.tracking_token}`,
+        `Hi ${store.name}, I just placed an order:\n${qty}× ${product.title}\nTotal: ₦${total.toLocaleString()}\nName: ${name}\nTrack: ${trackUrl}`,
       );
       window.open(`https://wa.me/${store.whatsapp.replace(/\D/g, "")}?text=${msg}`, "_blank");
     }
@@ -121,17 +133,29 @@ export function CheckoutDialog({ open, onOpenChange, store, product, qty }: Prop
             </div>
           </div>
 
-          <Button
-            onClick={placeOrder}
-            disabled={submitting}
-            size="lg"
-            className="h-12 w-full bg-gradient-primary text-base text-primary-foreground shadow-glow hover:opacity-90"
-          >
-            {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingBag className="mr-2 h-4 w-4" />}
-            Place order · ₦{total.toLocaleString()}
-          </Button>
+          <div className="grid gap-2">
+            <Button
+              onClick={() => placeOrder(false)}
+              disabled={submitting}
+              size="lg"
+              className="h-12 w-full bg-gradient-primary text-base text-primary-foreground shadow-glow hover:opacity-90"
+            >
+              {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingBag className="mr-2 h-4 w-4" />}
+              Place order · ₦{total.toLocaleString()}
+            </Button>
+            <Button
+              onClick={() => placeOrder(true)}
+              disabled={submitting}
+              size="lg"
+              variant="outline"
+              className="h-12 w-full border-border/60 bg-card/40 text-base backdrop-blur"
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              Pay in advance with Moniepoint
+            </Button>
+          </div>
           <p className="text-center text-[11px] text-muted-foreground">
-            Payment via Moniepoint coming soon. Confirm with the seller on WhatsApp.
+            Pay-now opens a secure Moniepoint checkout. Or place the order and confirm on WhatsApp.
           </p>
         </motion.div>
       </DialogContent>
