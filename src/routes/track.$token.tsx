@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, Package, Truck, XCircle, MessageCircle } from "lucide-react";
+import { CheckCircle2, Clock, Package, Truck, XCircle, MessageCircle, Printer, Share2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/track/$token")({
   head: () => ({ meta: [{ title: "Track order — Nexa" }] }),
@@ -150,14 +151,54 @@ function TrackPage() {
           {order.address && <p className="mt-3 text-xs text-muted-foreground">Delivery to: {order.address}</p>}
         </div>
 
-        {order.store?.whatsapp && (
-          <Button asChild size="lg" variant="outline" className="mt-6 h-12 w-full border-border/60 bg-card/40 backdrop-blur">
-            <a href={`https://wa.me/${order.store.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-              <MessageCircle className="mr-2 h-5 w-5" /> Message {order.store.name}
-            </a>
+        <div className="mt-6 grid gap-2 sm:grid-cols-3 print:hidden">
+          {order.store?.whatsapp && (
+            <Button asChild size="lg" variant="outline" className="h-12 border-border/60 bg-card/40 backdrop-blur">
+              <a href={`https://wa.me/${order.store.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                <MessageCircle className="mr-2 h-5 w-5" /> Message seller
+              </a>
+            </Button>
+          )}
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-12 border-border/60 bg-card/40 backdrop-blur"
+            onClick={() => window.print()}
+          >
+            <Printer className="mr-2 h-5 w-5" /> Print receipt
           </Button>
-        )}
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-12 border-border/60 bg-card/40 backdrop-blur"
+            onClick={async () => {
+              const url = window.location.href;
+              if (navigator.share) {
+                try {
+                  await navigator.share({ title: `Nexa order from ${order.store?.name ?? ""}`, url });
+                } catch { /* dismissed */ }
+              } else {
+                await navigator.clipboard.writeText(url);
+                toast.success("Tracking link copied");
+              }
+            }}
+          >
+            <Share2 className="mr-2 h-5 w-5" /> Share
+          </Button>
+        </div>
+
+        <p className="mt-6 text-center text-[11px] text-muted-foreground print:hidden">
+          Receipt ID · <span className="font-mono">{order.id.slice(0, 8).toUpperCase()}</span>
+        </p>
       </main>
+
+      <style>{`
+        @media print {
+          body { background: #fff !important; color: #000 !important; }
+          .dark { color-scheme: light; }
+          header, nav, button { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }
