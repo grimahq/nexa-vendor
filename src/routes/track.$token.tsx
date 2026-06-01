@@ -68,19 +68,19 @@ function TrackPage() {
 
   if (notFound) {
     return (
-      <div className="dark flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
         <h1 className="font-display text-3xl font-bold">Order not found</h1>
         <Link to="/" className="text-primary underline">Back home</Link>
       </div>
     );
   }
-  if (!order) return <div className="dark flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
+  if (!order) return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
 
   const cancelled = order.status === "cancelled";
   const stepIdx = STEPS.findIndex((s) => s.key === order.status);
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/50 bg-background/70 px-4 py-3 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <Logo />

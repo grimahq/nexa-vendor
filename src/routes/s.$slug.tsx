@@ -56,17 +56,17 @@ function StorePage() {
 
   if (notFound) {
     return (
-      <div className="dark flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
         <h1 className="font-display text-3xl font-bold">Store not found</h1>
         <Link to="/explore" className="text-primary underline">Browse stores</Link>
       </div>
     );
   }
 
-  if (!store) return <div className="dark flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
+  if (!store) return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground" style={store.brand_color ? { ["--primary" as never]: store.brand_color } : undefined}>
+    <div className="min-h-screen bg-background text-foreground" style={store.brand_color ? { ["--primary" as never]: store.brand_color } : undefined}>
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/70 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/explore" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">

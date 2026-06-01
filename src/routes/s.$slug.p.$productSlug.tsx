@@ -57,14 +57,14 @@ function ProductPage() {
     }
   }
 
-  if (!store || !product) return <div className="dark flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
+  if (!store || !product) return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
 
   const total = qty * Number(product.sell_price);
   const waMsg = encodeURIComponent(`Hi ${store.name}, I'd like to order ${qty}× ${product.title} (₦${total.toLocaleString()}).`);
   const waUrl = store.whatsapp ? `https://wa.me/${store.whatsapp.replace(/\D/g, "")}?text=${waMsg}` : null;
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground" style={store.brand_color ? { ["--primary" as never]: store.brand_color } : undefined}>
+    <div className="min-h-screen bg-background text-foreground" style={store.brand_color ? { ["--primary" as never]: store.brand_color } : undefined}>
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/70 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/s/$slug" params={{ slug }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
