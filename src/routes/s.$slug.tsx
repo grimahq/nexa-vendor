@@ -113,20 +113,44 @@ function StorePage() {
           <p className="rounded-3xl border border-dashed border-border/60 bg-card/30 p-12 text-center text-muted-foreground">No products listed yet.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p) => (
-              <Link key={p.id} to="/s/$slug/p/$productSlug" params={{ slug: store.slug, productSlug: p.slug }} className="card-3d glass overflow-hidden rounded-2xl shadow-soft">
-                <div className="relative aspect-square overflow-hidden bg-gradient-mesh">
-                  {p.images?.[0] ? (
-                    <img src={p.images[0]} alt={p.title} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-5xl">{p.icon ?? "🛍️"}</div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between p-4">
-                  <h3 className="font-semibold">{p.title}</h3>
-                  <p className="font-display font-bold text-primary">₦{Number(p.sell_price).toLocaleString()}</p>
-                </div>
-              </Link>
+            {products.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.04, duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+              >
+                <Link
+                  to="/s/$slug/p/$productSlug"
+                  params={{ slug: store.slug, productSlug: p.slug }}
+                  className="group relative block overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-elevated"
+                >
+                  <div className="relative aspect-square overflow-hidden bg-gradient-mesh">
+                    {p.images?.[0] ? (
+                      <img
+                        src={p.images[0]}
+                        alt={p.title}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-6xl transition-transform duration-500 group-hover:scale-110">{p.icon ?? "🛍️"}</div>
+                    )}
+                    {/* gloss */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    {p.stock > 0 && p.stock <= 5 && (
+                      <span className="absolute left-3 top-3 rounded-full bg-warning/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-warning-foreground shadow-soft">
+                        {p.stock} left
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-3 p-4">
+                    <h3 className="min-w-0 truncate font-medium">{p.title}</h3>
+                    <p className="shrink-0 font-display text-base font-bold text-primary">₦{Number(p.sell_price).toLocaleString()}</p>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
           </div>
         )}
