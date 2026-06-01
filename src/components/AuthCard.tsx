@@ -15,7 +15,7 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <div className="dark relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12 text-foreground">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12 text-foreground">
       <MeshBackground />
       <div className="relative w-full max-w-md">
         <div className="mb-8 flex justify-center">

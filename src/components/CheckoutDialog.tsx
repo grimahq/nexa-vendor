@@ -79,7 +79,7 @@ export function CheckoutDialog({ open, onOpenChange, store, product, qty }: Prop
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="dark max-h-[92vh] overflow-y-auto bg-card sm:max-w-md">
+      <DialogContent className="max-h-[92vh] overflow-y-auto bg-card sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Complete your order</DialogTitle>
         </DialogHeader>

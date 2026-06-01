@@ -19,7 +19,7 @@ function Explore() {
   }, []);
 
   return (
-    <div className="dark relative min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground">
       <MeshBackground />
       <SiteHeader />
       <main className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6">
