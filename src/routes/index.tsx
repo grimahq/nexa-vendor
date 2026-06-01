@@ -56,7 +56,7 @@ function SectionHeading({ tag, children }: { tag: string; children: React.ReactN
 function HomePage() {
   const reduce = useReducedMotion();
   return (
-    <div className="dark relative min-h-screen overflow-hidden bg-background text-foreground">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <MeshBackground />
       <SiteHeader />
 

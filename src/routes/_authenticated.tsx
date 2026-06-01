@@ -51,20 +51,20 @@ function AuthedLayout() {
   }, [hasStore, loc.pathname, nav, isBuyerArea]);
 
   if (loading || hasStore === null) {
-    return <div className="dark flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
   }
 
   // Onboarding or buyer-only area: render without vendor sidebar
   if (loc.pathname === "/onboarding" || isBuyerArea) {
     return (
-      <div className="dark min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground">
         <Outlet />
       </div>
     );
   }
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="flex">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/50 bg-card/30 p-4 backdrop-blur md:flex md:flex-col">
           <div className="px-2 py-2"><Logo /></div>
