@@ -48,7 +48,7 @@ function CustomersPage() {
         .select("id,buyer_name,buyer_phone,total,items,created_at")
         .eq("store_id", store.id)
         .order("created_at", { ascending: false });
-      setOrders((data ?? []) as OrderRow[]);
+      setOrders((data ?? []) as unknown as OrderRow[]);
       setLoading(false);
     })();
   }, [user]);
