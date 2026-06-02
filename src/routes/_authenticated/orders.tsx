@@ -56,7 +56,7 @@ function OrdersPage() {
         .select("id,status,buyer_name,buyer_phone,fulfillment,address,total,items,tracking_token,created_at")
         .eq("store_id", s.id)
         .order("created_at", { ascending: false });
-      setOrders((data ?? []) as Order[]);
+      setOrders((data ?? []) as unknown as Order[]);
       setLoading(false);
       channel = supabase
         .channel(`orders-${s.id}`)
@@ -65,10 +65,12 @@ function OrdersPage() {
           { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${s.id}` },
           (payload) => {
             if (payload.eventType === "INSERT") {
-              setOrders((prev) => [payload.new as Order, ...prev]);
-              toast.success(`New order from ${(payload.new as Order).buyer_name}`);
+              const order = payload.new as unknown as Order;
+              setOrders((prev) => [order, ...prev]);
+              toast.success(`New order from ${order.buyer_name}`);
             } else if (payload.eventType === "UPDATE") {
-              setOrders((prev) => prev.map((o) => (o.id === (payload.new as Order).id ? (payload.new as Order) : o)));
+              const order = payload.new as unknown as Order;
+              setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
             }
           },
         )
