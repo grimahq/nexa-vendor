@@ -47,7 +47,7 @@ function TrackPage() {
         if (mounted) setNotFound(true);
         return;
       }
-      if (mounted) setOrder(result.order as Order);
+      if (mounted) setOrder(result.order as unknown as Order);
     }
     load();
     const ch = supabase
