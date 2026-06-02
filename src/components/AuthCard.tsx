@@ -1,5 +1,4 @@
 import { type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { MeshBackground } from "./MeshBackground";
 
@@ -19,9 +18,7 @@ export function AuthCard({
       <MeshBackground />
       <div className="relative w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Link to="/">
-            <Logo />
-          </Link>
+          <Logo />
         </div>
         <div className="glass rounded-3xl p-8 shadow-elevated">
           <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>

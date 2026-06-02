@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/orders")({
 
 type Order = {
   id: string;
-  status: "pending" | "confirmed" | "fulfilled" | "delivered" | "cancelled";
+  status: "pending" | "paid" | "confirmed" | "fulfilled" | "delivered" | "cancelled";
   buyer_name: string;
   buyer_phone: string;
   fulfillment: "pickup" | "delivery";
@@ -25,15 +25,16 @@ type Order = {
   created_at: string;
 };
 
-const FILTERS = ["all", "pending", "confirmed", "fulfilled", "delivered", "cancelled"] as const;
+const FILTERS = ["all", "pending", "paid", "confirmed", "fulfilled", "delivered", "cancelled"] as const;
 type Filter = (typeof FILTERS)[number];
 
 const STATUS_META: Record<Order["status"], { label: string; icon: typeof Clock; cls: string }> = {
-  pending: { label: "Pending", icon: Clock, cls: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
-  confirmed: { label: "Confirmed", icon: CheckCircle2, cls: "bg-blue-500/15 text-blue-300 border-blue-500/30" },
-  fulfilled: { label: "Fulfilled", icon: Package, cls: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
-  delivered: { label: "Delivered", icon: Truck, cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
-  cancelled: { label: "Cancelled", icon: XCircle, cls: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
+  pending: { label: "Pending", icon: Clock, cls: "border-warning/30 bg-warning/15 text-warning" },
+  paid: { label: "Paid", icon: CheckCircle2, cls: "border-success/30 bg-success/15 text-success" },
+  confirmed: { label: "Confirmed", icon: CheckCircle2, cls: "border-primary/30 bg-primary/10 text-primary" },
+  fulfilled: { label: "Fulfilled", icon: Package, cls: "border-accent bg-accent/60 text-accent-foreground" },
+  delivered: { label: "Delivered", icon: Truck, cls: "border-success/30 bg-success/15 text-success" },
+  cancelled: { label: "Cancelled", icon: XCircle, cls: "border-destructive/30 bg-destructive/10 text-destructive" },
 };
 
 function OrdersPage() {
@@ -55,7 +56,7 @@ function OrdersPage() {
         .select("id,status,buyer_name,buyer_phone,fulfillment,address,total,items,tracking_token,created_at")
         .eq("store_id", s.id)
         .order("created_at", { ascending: false });
-      setOrders((data ?? []) as Order[]);
+      setOrders((data ?? []) as unknown as Order[]);
       setLoading(false);
       channel = supabase
         .channel(`orders-${s.id}`)
@@ -64,10 +65,12 @@ function OrdersPage() {
           { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${s.id}` },
           (payload) => {
             if (payload.eventType === "INSERT") {
-              setOrders((prev) => [payload.new as Order, ...prev]);
-              toast.success(`New order from ${(payload.new as Order).buyer_name}`);
+              const order = payload.new as unknown as Order;
+              setOrders((prev) => [order, ...prev]);
+              toast.success(`New order from ${order.buyer_name}`);
             } else if (payload.eventType === "UPDATE") {
-              setOrders((prev) => prev.map((o) => (o.id === (payload.new as Order).id ? (payload.new as Order) : o)));
+              const order = payload.new as unknown as Order;
+              setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
             }
           },
         )
@@ -159,7 +162,7 @@ function OrdersPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {o.status === "pending" && (
+                    {(o.status === "pending" || o.status === "paid") && (
                       <Button size="sm" onClick={() => setStatus(o.id, "confirmed")} className="bg-gradient-primary text-primary-foreground hover:opacity-90">
                         Confirm
                       </Button>
