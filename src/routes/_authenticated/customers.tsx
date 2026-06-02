@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -150,7 +150,7 @@ function CustomersPage() {
   );
 }
 
-function Stat({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: string }) {
+function Stat({ icon: Icon, label, value }: { icon: ComponentType<{ className?: string }>; label: string; value: string }) {
   return (
     <div className="rounded-3xl border border-border/60 bg-card/80 p-4 shadow-soft">
       <div className="flex items-center gap-3">
