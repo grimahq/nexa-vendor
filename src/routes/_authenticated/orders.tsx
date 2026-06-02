@@ -29,12 +29,12 @@ const FILTERS = ["all", "pending", "paid", "confirmed", "fulfilled", "delivered"
 type Filter = (typeof FILTERS)[number];
 
 const STATUS_META: Record<Order["status"], { label: string; icon: typeof Clock; cls: string }> = {
-  pending: { label: "Pending", icon: Clock, cls: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
-  paid: { label: "Paid", icon: CheckCircle2, cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
-  confirmed: { label: "Confirmed", icon: CheckCircle2, cls: "bg-blue-500/15 text-blue-300 border-blue-500/30" },
-  fulfilled: { label: "Fulfilled", icon: Package, cls: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
-  delivered: { label: "Delivered", icon: Truck, cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
-  cancelled: { label: "Cancelled", icon: XCircle, cls: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
+  pending: { label: "Pending", icon: Clock, cls: "border-warning/30 bg-warning/15 text-warning" },
+  paid: { label: "Paid", icon: CheckCircle2, cls: "border-success/30 bg-success/15 text-success" },
+  confirmed: { label: "Confirmed", icon: CheckCircle2, cls: "border-primary/30 bg-primary/10 text-primary" },
+  fulfilled: { label: "Fulfilled", icon: Package, cls: "border-accent bg-accent/60 text-accent-foreground" },
+  delivered: { label: "Delivered", icon: Truck, cls: "border-success/30 bg-success/15 text-success" },
+  cancelled: { label: "Cancelled", icon: XCircle, cls: "border-destructive/30 bg-destructive/10 text-destructive" },
 };
 
 function OrdersPage() {
