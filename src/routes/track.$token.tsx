@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicOrderReceipt } from "@/lib/order-public.functions";
 import { CheckCircle2, Clock, Package, Truck, XCircle, MessageCircle, Printer, Share2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -33,27 +35,19 @@ const STEPS = [
 
 function TrackPage() {
   const { token } = Route.useParams();
+  const fetchReceipt = useServerFn(getPublicOrderReceipt);
   const [order, setOrder] = useState<Order | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     async function load() {
-      const { data } = await supabase
-        .from("orders")
-        .select("id,status,total,fulfillment,address,buyer_name,items,created_at,store_id")
-        .eq("tracking_token", token)
-        .maybeSingle();
-      if (!data) {
+      const result = await fetchReceipt({ data: { token } });
+      if (!result.order) {
         if (mounted) setNotFound(true);
         return;
       }
-      const { data: store } = await supabase
-        .from("stores")
-        .select("name,slug,whatsapp,logo_url")
-        .eq("id", data.store_id)
-        .maybeSingle();
-      if (mounted) setOrder({ ...(data as unknown as Omit<Order, "store">), store: (store as Order["store"]) ?? null });
+      if (mounted) setOrder(result.order as Order);
     }
     load();
     const ch = supabase
