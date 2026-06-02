@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/orders")({
 
 type Order = {
   id: string;
-  status: "pending" | "confirmed" | "fulfilled" | "delivered" | "cancelled";
+  status: "pending" | "paid" | "confirmed" | "fulfilled" | "delivered" | "cancelled";
   buyer_name: string;
   buyer_phone: string;
   fulfillment: "pickup" | "delivery";
@@ -25,11 +25,12 @@ type Order = {
   created_at: string;
 };
 
-const FILTERS = ["all", "pending", "confirmed", "fulfilled", "delivered", "cancelled"] as const;
+const FILTERS = ["all", "pending", "paid", "confirmed", "fulfilled", "delivered", "cancelled"] as const;
 type Filter = (typeof FILTERS)[number];
 
 const STATUS_META: Record<Order["status"], { label: string; icon: typeof Clock; cls: string }> = {
   pending: { label: "Pending", icon: Clock, cls: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
+  paid: { label: "Paid", icon: CheckCircle2, cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
   confirmed: { label: "Confirmed", icon: CheckCircle2, cls: "bg-blue-500/15 text-blue-300 border-blue-500/30" },
   fulfilled: { label: "Fulfilled", icon: Package, cls: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
   delivered: { label: "Delivered", icon: Truck, cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
@@ -159,7 +160,7 @@ function OrdersPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {o.status === "pending" && (
+                    {(o.status === "pending" || o.status === "paid") && (
                       <Button size="sm" onClick={() => setStatus(o.id, "confirmed")} className="bg-gradient-primary text-primary-foreground hover:opacity-90">
                         Confirm
                       </Button>
