@@ -58,8 +58,15 @@ function AuthedLayout() {
     }
   }, [hasStore, loc.pathname, nav, isBuyerArea]);
 
-  if (loading || hasStore === null) {
-    return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
+  if (loading || (!user) || hasStore === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+          Loading your workspace…
+        </div>
+      </div>
+    );
   }
 
   // Onboarding or buyer-only area: render without vendor sidebar
