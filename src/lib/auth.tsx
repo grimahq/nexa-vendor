@@ -21,8 +21,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(s);
       setLoading(false);
     });
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      // Re-validate with the Auth server so user info is authoritative
+      if (data.session) {
+        const { data: u } = await supabase.auth.getUser();
+        if (u.user && data.session) {
+          setSession({ ...data.session, user: u.user });
+        }
+      }
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
