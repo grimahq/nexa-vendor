@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
+  ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
       throw redirect({ to: "/login" });
     }
+    return { user: data.user };
   },
   component: AuthedLayout,
 });
@@ -56,8 +58,15 @@ function AuthedLayout() {
     }
   }, [hasStore, loc.pathname, nav, isBuyerArea]);
 
-  if (loading || hasStore === null) {
-    return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
+  if (loading || (!user) || hasStore === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+          Loading your workspace…
+        </div>
+      </div>
+    );
   }
 
   // Onboarding or buyer-only area: render without vendor sidebar
