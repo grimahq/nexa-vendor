@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Start selling — Nexa Vendors" }] }),
@@ -18,10 +19,14 @@ function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (password.length < 6) {
+      return toast.error("Password must be at least 6 characters");
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -31,12 +36,19 @@ function SignupPage() {
         data: { full_name: fullName },
       },
     });
-    setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
     if (data.session) {
-      toast.success("Account created");
-      nav({ to: "/onboarding" });
+      // Re-validate so layout sees the authenticated user
+      const { data: u } = await supabase.auth.getUser();
+      setLoading(false);
+      if (!u.user) return toast.error("Couldn't confirm your account. Try signing in.");
+      toast.success("Account created — let's set up your store");
+      nav({ to: "/onboarding", replace: true });
     } else {
+      setLoading(false);
       toast.success("Check your email to confirm your account");
     }
   }
@@ -50,16 +62,35 @@ function SignupPage() {
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
           <Label htmlFor="name">Your name</Label>
-          <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          <Input id="name" required autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-          <p className="text-xs text-muted-foreground">At least 8 characters.</p>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={6}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">Use at least 6 characters — letters or numbers are fine.</p>
         </div>
         <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90">
           {loading ? "Creating…" : "Create account"}
