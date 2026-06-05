@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Sign in — Nexa Vendors" }] }),
   component: LoginPage,
 });
