@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
+import { createCheckoutOrder } from "@/lib/commerce.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,6 +35,7 @@ const STEP_LABELS: Record<Step, string> = {
 export function CheckoutDialog({ open, onOpenChange, store, product, qty }: Props) {
   const { user } = useAuth();
   const nav = useNavigate();
+  const submitCheckoutOrder = useServerFn(createCheckoutOrder);
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -58,46 +60,48 @@ export function CheckoutDialog({ open, onOpenChange, store, product, qty }: Prop
 
   async function placeOrder(mode: "advance" | "whatsapp") {
     setSubmitting(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .insert({
-        store_id: store.id,
-        buyer_id: user?.id ?? null,
-        buyer_name: name.trim(),
-        buyer_phone: phone.trim(),
-        buyer_email: email.trim() || null,
-        items: [{ product_id: product.id, title: product.title, qty, price: Number(product.sell_price) }],
-        subtotal: total,
-        total,
-        fulfillment,
-        address: fulfillment === "delivery" ? address.trim() : null,
-        notes: notes.trim() || null,
-      })
-      .select("id, tracking_token")
-      .single();
-    setSubmitting(false);
-    if (error || !data) return toast.error(error?.message ?? "Could not place order");
-
-    setOrderId(data.id);
-    setTrackToken(data.tracking_token);
-    const trackUrl = `${window.location.origin}/track/${data.tracking_token}`;
-
-    if (mode === "advance") {
-      const url = buildCheckoutUrl({
-        amount: total,
-        reference: data.id,
-        customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || undefined },
-        redirectUrl: trackUrl,
-        merchantCode: store.id,
+    try {
+      const result = await submitCheckoutOrder({
+        data: {
+          storeId: store.id,
+          productId: product.id,
+          qty,
+          buyerName: name.trim(),
+          buyerPhone: phone.trim(),
+          buyerEmail: email.trim(),
+          fulfillment,
+          address: address.trim(),
+          notes: notes.trim(),
+          mode,
+        },
       });
-      window.open(url, "_blank", "noopener,noreferrer");
-    } else if (store.whatsapp) {
-      const msg = encodeURIComponent(
-        `Hi ${store.name}, I just placed an order:\n${qty}× ${product.title}\nTotal: ₦${total.toLocaleString()}\nName: ${name}\nTrack: ${trackUrl}`,
-      );
-      window.open(`https://wa.me/${store.whatsapp.replace(/\D/g, "")}?text=${msg}`, "_blank", "noopener,noreferrer");
+
+      setOrderId(result.order.id);
+      setTrackToken(result.order.tracking_token);
+      const trackUrl = `${window.location.origin}/track/${result.order.tracking_token}`;
+
+      if (mode === "advance") {
+        const url = buildCheckoutUrl({
+          amount: total,
+          reference: result.order.id,
+          customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || undefined },
+          redirectUrl: trackUrl,
+          merchantCode: store.id,
+        });
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else if (store.whatsapp) {
+        const msg = encodeURIComponent(
+          `Hi ${store.name}, I just placed an order:\n${qty}× ${product.title}\nTotal: ₦${total.toLocaleString()}\nName: ${name}\nTrack: ${trackUrl}`,
+        );
+        window.open(`https://wa.me/${store.whatsapp.replace(/\D/g, "")}?text=${msg}`, "_blank", "noopener,noreferrer");
+      }
+      toast.success(mode === "advance" ? "Payment receipt generated" : "Order saved for WhatsApp confirmation");
+      setStep(3);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not place order");
+    } finally {
+      setSubmitting(false);
     }
-    setStep(3);
   }
 
   function reset() {

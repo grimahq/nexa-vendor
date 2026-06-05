@@ -23,6 +23,8 @@ type Order = {
   buyer_name: string;
   items: { title: string; qty: number; price: number }[];
   created_at: string;
+  payment_ref: string | null;
+  payment: { provider: string; status: string; reference: string | null; amount: number; created_at: string } | null;
   store: { name: string; slug: string; whatsapp: string | null; logo_url: string | null } | null;
 };
 
@@ -32,6 +34,11 @@ const STEPS = [
   { key: "fulfilled", label: "Fulfilled", icon: Package },
   { key: "delivered", label: "Delivered", icon: Truck },
 ] as const;
+
+function getStepIndex(status: string) {
+  if (status === "paid") return 1;
+  return STEPS.findIndex((s) => s.key === status);
+}
 
 function TrackPage() {
   const { token } = Route.useParams();
@@ -58,7 +65,7 @@ function TrackPage() {
       mounted = false;
       supabase.removeChannel(ch);
     };
-  }, [token]);
+  }, [token, fetchReceipt]);
 
   if (notFound) {
     return (
@@ -71,7 +78,7 @@ function TrackPage() {
   if (!order) return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading…</div>;
 
   const cancelled = order.status === "cancelled";
-  const stepIdx = STEPS.findIndex((s) => s.key === order.status);
+  const stepIdx = getStepIndex(order.status);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -143,6 +150,23 @@ function TrackPage() {
             <span className="font-display text-xl font-bold text-primary">₦{Number(order.total).toLocaleString()}</span>
           </div>
           {order.address && <p className="mt-3 text-xs text-muted-foreground">Delivery to: {order.address}</p>}
+        </div>
+
+        <div className="mt-6 rounded-3xl border border-border/50 bg-card/40 p-6 backdrop-blur">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground">Payment receipt</h3>
+              <p className="mt-2 font-display text-xl font-bold capitalize text-foreground">
+                {order.payment?.provider ?? "WhatsApp confirmation"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Ref · <span className="font-mono">{order.payment?.reference ?? order.payment_ref ?? order.id.slice(0, 8).toUpperCase()}</span>
+              </p>
+            </div>
+            <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${order.payment?.status === "success" || order.status === "paid" ? "border-success/30 bg-success/15 text-success" : "border-warning/30 bg-warning/15 text-warning"}`}>
+              {order.payment?.status === "success" || order.status === "paid" ? "Paid" : "Pending"}
+            </span>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-2 sm:grid-cols-3 print:hidden">
