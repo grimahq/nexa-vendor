@@ -105,6 +105,7 @@ export const createVendorProduct = createServerFn({ method: "POST" })
     return { product };
   });
 
+
 export const createCheckoutOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => OrderInput.parse(input))
   .handler(async ({ data }) => {
