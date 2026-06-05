@@ -65,7 +65,7 @@ function TrackPage() {
       mounted = false;
       supabase.removeChannel(ch);
     };
-  }, [token]);
+  }, [token, fetchReceipt]);
 
   if (notFound) {
     return (
