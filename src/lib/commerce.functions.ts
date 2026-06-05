@@ -35,25 +35,6 @@ const OrderInput = z.object({
   mode: z.enum(["advance", "whatsapp"]),
 });
 
-async function getOptionalUserId() {
-  const { getRequest } = await import("@tanstack/react-start/server");
-  const request = getRequest();
-  const authHeader = request?.headers?.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-
-  const token = authHeader.replace("Bearer ", "").trim();
-  if (!token) return null;
-
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin.auth.getUser(token);
-    if (error || !data.user) return null;
-    return data.user.id;
-  } catch {
-    return null;
-  }
-}
-
 export const createVendorProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => ProductInput.parse(input))
@@ -109,8 +90,18 @@ export const createVendorProduct = createServerFn({ method: "POST" })
 export const createCheckoutOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => OrderInput.parse(input))
   .handler(async ({ data }) => {
+    const { getRequest } = await import("@tanstack/react-start/server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const buyerId = await getOptionalUserId();
+    const authHeader = getRequest()?.headers?.get("authorization");
+    let buyerId: string | null = null;
+
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "").trim();
+      if (token) {
+        const { data: userData } = await supabaseAdmin.auth.getUser(token);
+        buyerId = userData.user?.id ?? null;
+      }
+    }
 
     if (data.fulfillment === "delivery" && !data.address) {
       throw new Error("Delivery address is required.");
