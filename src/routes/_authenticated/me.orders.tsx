@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { getMyCommerceOrders } from "@/lib/commerce.functions";
 import { ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/me/orders")({
   head: () => ({ meta: [{ title: "My orders — Nexa" }] }),
@@ -22,34 +24,31 @@ type Row = {
 
 function MyOrders() {
   const { user } = useAuth();
+  const fetchOrders = useServerFn(getMyCommerceOrders);
   const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from("orders")
-        .select("id,status,total,created_at,tracking_token,items,store_id")
-        .eq("buyer_id", user.id)
-        .order("created_at", { ascending: false });
-      const ids = Array.from(new Set((data ?? []).map((d) => d.store_id)));
-      const { data: stores } = ids.length
-        ? await supabase.from("stores").select("id,name,slug").in("id", ids)
-        : { data: [] };
-      const byId = new Map((stores ?? []).map((s) => [s.id, s]));
-      setRows(
-        (data ?? []).map((o) => ({
-          ...(o as unknown as Omit<Row, "store">),
-          store: (byId.get(o.store_id) as { name: string; slug: string } | undefined) ?? null,
-        })),
-      );
+      setLoading(true);
+      try {
+        const result = await fetchOrders();
+        setRows(result.orders as unknown as Row[]);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not load your orders");
+      } finally {
+        setLoading(false);
+      }
     })();
-  }, [user]);
+  }, [user, fetchOrders]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
       <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">My orders</h1>
-      {rows.length === 0 ? (
+      {loading ? (
+        <p className="mt-12 text-center text-muted-foreground">Loading your orders…</p>
+      ) : rows.length === 0 ? (
         <div className="mt-12 rounded-3xl border border-dashed border-border/60 bg-card/30 p-12 text-center">
           <ShoppingBag className="mx-auto h-10 w-10 text-muted-foreground" />
           <h3 className="mt-4 font-display text-xl font-semibold">No orders yet</h3>

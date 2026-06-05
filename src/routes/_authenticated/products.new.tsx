@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { generateProductDescription } from "@/lib/product-ai.functions";
+import { createVendorProduct } from "@/lib/commerce.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,21 +20,20 @@ export const Route = createFileRoute("/_authenticated/products/new")({
 });
 
 const ICONS = ["🛍️","🍔","🥘","🍰","👗","👟","💄","💍","📱","🎧","💻","📚","🌸","🍹","🍕","🥤"];
-const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
 type Step = 0 | 1 | 2 | 3;
 
 function NewProduct() {
   const { user } = useAuth();
   const nav = useNavigate();
   const generateDescription = useServerFn(generateProductDescription);
+  const createProduct = useServerFn(createVendorProduct);
   const [storeId, setStoreId] = useState<string | null>(null);
   const [storeLoading, setStoreLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [sellPrice, setSellPrice] = useState("");
   const [costPrice, setCostPrice] = useState("");
-  const [stock, setStock] = useState("0");
+  const [stock, setStock] = useState("1");
   const [sourceUrl, setSourceUrl] = useState("");
   const [active, setActive] = useState(true);
   const [icon, setIcon] = useState(ICONS[0]);
@@ -59,6 +59,7 @@ function NewProduct() {
   function next() {
     if (step === 0 && title.trim().length < 2) return toast.error("Add a product name first");
     if (step === 1 && (!sellPrice || Number(sellPrice) <= 0)) return toast.error("Add a valid selling price");
+    if (step === 1 && (!stock || Number(stock) < 1)) return toast.error("Add at least 1 unit in stock");
     setStep((s) => Math.min(3, s + 1) as Step);
   }
 
@@ -96,31 +97,29 @@ function NewProduct() {
     if (!storeId) return toast.error("No store yet");
     if (!title.trim()) return toast.error("Product title is required");
     if ((Number(sellPrice) || 0) <= 0) return toast.error("Selling price must be greater than zero");
+    if ((Number(stock) || 0) < 1) return toast.error("Units in stock must be at least 1");
     setSaving(true);
-    const baseSlug = slugify(title) || `item-${Date.now()}`;
-    let slug = baseSlug;
-    for (let i = 0; i < 5; i++) {
-      const { data } = await supabase.from("products").select("id").eq("store_id", storeId).eq("slug", slug).maybeSingle();
-      if (!data) break;
-      slug = `${baseSlug}-${Math.floor(Math.random() * 9000 + 1000)}`;
+    try {
+      await createProduct({
+        data: {
+          title: title.trim(),
+          description: description.trim(),
+          sellPrice: Number(sellPrice) || 0,
+          costPrice: Number(costPrice) || 0,
+          stock: Number(stock) || 0,
+          active,
+          icon,
+          images,
+          sourceUrl: sourceUrl.trim(),
+        },
+      });
+      toast.success("Product added");
+      nav({ to: "/products", replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not add product");
+    } finally {
+      setSaving(false);
     }
-    const { error } = await supabase.from("products").insert({
-      store_id: storeId,
-      title: title.trim(),
-      slug,
-      description: description.trim() || null,
-      sell_price: Number(sellPrice) || 0,
-      cost_price: Number(costPrice) || 0,
-      stock: Number(stock) || 0,
-      active,
-      icon,
-      images,
-      catalog: sourceUrl.trim() || null,
-    });
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Product added");
-    nav({ to: "/products" });
   }
 
   if (storeLoading) {

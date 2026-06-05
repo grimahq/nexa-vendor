@@ -20,10 +20,21 @@ function ProductsPage() {
   const [loading, setLoading] = useState(true);
 
   async function refresh(uid: string) {
-    const { data: s } = await supabase.from("stores").select("id,slug").eq("owner_id", uid).maybeSingle();
-    if (!s) return;
+    setLoading(true);
+    const { data: s, error: storeError } = await supabase.from("stores").select("id,slug").eq("owner_id", uid).maybeSingle();
+    if (storeError) {
+      toast.error(storeError.message);
+      setLoading(false);
+      return;
+    }
+    if (!s) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
     setStoreSlug(s.slug);
-    const { data } = await supabase.from("products").select("id,title,sell_price,stock,images,icon,slug,active,views").eq("store_id", s.id).order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("products").select("id,title,sell_price,stock,images,icon,slug,active,views").eq("store_id", s.id).order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
     setItems((data ?? []) as P[]);
     setLoading(false);
   }
