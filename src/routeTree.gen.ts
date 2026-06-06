@@ -23,6 +23,7 @@ import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedProductsNewRouteImport } from './routes/_authenticated/products.new'
 import { Route as AuthenticatedMeOrdersRouteImport } from './routes/_authenticated/me.orders'
 import { Route as AuthenticatedMeFeedRouteImport } from './routes/_authenticated/me.feed'
@@ -98,6 +99,11 @@ const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedProductsNewRoute =
   AuthenticatedProductsNewRouteImport.update({
     id: '/new',
@@ -115,9 +121,9 @@ const AuthenticatedMeFeedRoute = AuthenticatedMeFeedRouteImport.update({
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminKycRoute = AuthenticatedAdminKycRouteImport.update({
-  id: '/admin/kyc',
-  path: '/admin/kyc',
-  getParentRoute: () => AuthenticatedRoute,
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const SSlugPProductSlugRoute = SSlugPProductSlugRouteImport.update({
   id: '/p/$productSlug',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/login'
     | '/signup'
+    | '/admin'
     | '/customers'
     | '/dashboard'
     | '/onboarding'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/login'
     | '/signup'
+    | '/admin'
     | '/customers'
     | '/dashboard'
     | '/onboarding'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/login'
     | '/signup'
+    | '/_authenticated/admin'
     | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
@@ -361,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/products/new': {
       id: '/_authenticated/products/new'
       path: '/new'
@@ -384,10 +403,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin/kyc': {
       id: '/_authenticated/admin/kyc'
-      path: '/admin/kyc'
+      path: '/kyc'
       fullPath: '/admin/kyc'
       preLoaderRoute: typeof AuthenticatedAdminKycRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/s/$slug/p/$productSlug': {
       id: '/s/$slug/p/$productSlug'
@@ -398,6 +417,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminKycRoute: typeof AuthenticatedAdminKycRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminKycRoute: AuthenticatedAdminKycRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedProductsRouteChildren {
   AuthenticatedProductsNewRoute: typeof AuthenticatedProductsNewRoute
@@ -413,6 +443,7 @@ const AuthenticatedProductsRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -420,12 +451,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProductsRoute: typeof AuthenticatedProductsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
-  AuthenticatedAdminKycRoute: typeof AuthenticatedAdminKycRoute
   AuthenticatedMeFeedRoute: typeof AuthenticatedMeFeedRoute
   AuthenticatedMeOrdersRoute: typeof AuthenticatedMeOrdersRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
@@ -433,7 +464,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProductsRoute: AuthenticatedProductsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
-  AuthenticatedAdminKycRoute: AuthenticatedAdminKycRoute,
   AuthenticatedMeFeedRoute: AuthenticatedMeFeedRoute,
   AuthenticatedMeOrdersRoute: AuthenticatedMeOrdersRoute,
 }
@@ -464,3 +494,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
