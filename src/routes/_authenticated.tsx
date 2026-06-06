@@ -51,12 +51,13 @@ function AuthedLayout() {
   }, []);
 
   const isBuyerArea = loc.pathname.startsWith("/me");
+  const isAdminArea = loc.pathname.startsWith("/admin");
 
   useEffect(() => {
-    if (hasStore === false && !isBuyerArea && loc.pathname !== "/onboarding") {
+    if (hasStore === false && !isBuyerArea && !isAdminArea && loc.pathname !== "/onboarding") {
       nav({ to: "/onboarding" });
     }
-  }, [hasStore, loc.pathname, nav, isBuyerArea]);
+  }, [hasStore, loc.pathname, nav, isBuyerArea, isAdminArea]);
 
   if (loading || (!user) || hasStore === null) {
     return (
@@ -69,8 +70,8 @@ function AuthedLayout() {
     );
   }
 
-  // Onboarding or buyer-only area: render without vendor sidebar
-  if (loc.pathname === "/onboarding" || isBuyerArea) {
+  // Onboarding, buyer, or admin area: render without vendor sidebar
+  if (loc.pathname === "/onboarding" || isBuyerArea || isAdminArea) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Outlet />
