@@ -1,94 +1,76 @@
-# Nexa Vendors — Build Plan
+# Super Admin Panel — Proposal
 
-A WhatsApp-first commerce platform for Nigerian online sellers. Vendors set up a branded micro-store, share product links with strong CTAs, accept payments (Moniepoint), manage orders, and follow up clients on WhatsApp. Buyers can browse, like, follow, comment, and track orders — accounts are optional.
+A dedicated, role-gated admin area at `/admin/*` with its own layout, navigation, and analytics. Separated from the vendor dashboard so it can scale into a full operations console.
 
-## 1. Scope (v1)
+## 1. Access & Security
 
-**Vendor side**
-- Sign up / sign in (email + Google)
-- Brand setup: name, logo, tagline, WhatsApp number, category, brand color
-- Products: title, description, images, icon/SVG, cost price, selling price, auto-calculated profit, stock, catalog/category
-- Per-product unique shareable link with auto-generated CTA copy and animated +/- quantity selector
-- Orders dashboard (real-time): new, paid, fulfilled, cancelled
-- Customer list with WhatsApp follow-up (one-tap message templates)
-- Receipts (auto-generated, downloadable + WhatsApp-shareable)
-- Settings: delivery/pickup, payout details, KYC
+- New role: `superadmin` (added to `app_role` enum alongside existing `admin`, `buyer`).
+- Pathless layout `src/routes/_admin/route.tsx` — `ssr: false`, redirects non-admins to `/dashboard`.
+- All admin queries via `createServerFn` + `requireSupabaseAuth` + `has_role(uid, 'superadmin')` check (never client-only gating).
+- Audit log table `admin_audit_log` records every action (who, what, target, before/after, IP).
 
-**Buyer side**
-- Browse store landing page (vendor's mini-site)
-- Like, comment, follow store (requires account)
-- Place order as guest OR logged in — pickup or delivery
-- Order tracking via temporary signed link (no account needed) or account history
-- Payment via Moniepoint link (stubbed for now)
+## 2. Routes / Modules
 
-**Nexa company side**
-- Landing page: hero, pain points, features, FAQ, live feed of recent vendor signups (logo + name), category leaderboards
-- Verified badge (post-KYC review)
-
-## 2. Tech & Architecture
-
-```text
-Frontend:  TanStack Start (already set up) + Tailwind + shadcn/ui
-Motion:    framer-motion for 3D cards, +/- animation, page transitions
-Backend:   Lovable Cloud (Supabase) — auth, DB, storage, RLS
-Payments:  Moniepoint (stubbed endpoint now, real API when creds arrive)
-Realtime:  Supabase Realtime for orders dashboard + live signup feed
-WhatsApp:  wa.me deep links for follow-ups & receipt sharing
+```
+/admin                  -> Overview (KPIs: GMV, MRR, active vendors, pending KYC)
+/admin/users            -> All users; search, ban, impersonate, reset password
+/admin/vendors          -> Stores list; verify, suspend, feature, edit
+/admin/kyc              -> Real KYC queue (replaces current /admin/kyc)
+/admin/orders           -> All orders across platform; refund, dispute
+/admin/payments         -> Transactions, payouts, reconciliation
+/admin/subscriptions    -> Plans, subscribers, churn, manual overrides
+/admin/revenue          -> Income dashboard: fees, commissions, MRR charts
+/admin/plans            -> CRUD subscription plans (price, features, limits)
+/admin/coupons          -> Promo codes & discounts
+/admin/announcements    -> Broadcast banners to vendors/buyers
+/admin/audit-log        -> Full action history
+/admin/settings         -> Platform fees, KYC provider keys, feature flags
 ```
 
-### Database tables
-- `profiles` (auth.users link, full_name, role: vendor|buyer|admin)
-- `stores` (owner_id, slug, name, logo_url, tagline, whatsapp, brand_color, category, verified, kyc_status)
-- `products` (store_id, title, description, images[], icon, cost_price, sell_price, stock, catalog, slug)
-- `orders` (store_id, buyer_id?, items jsonb, total, fulfillment: pickup|delivery, address, status, payment_ref, tracking_token)
-- `order_events` (order_id, type, note) — for tracking timeline
-- `payments` (order_id, provider: moniepoint, amount, status, raw jsonb)
-- `follows` (buyer_id, store_id)
-- `likes` (buyer_id, product_id)
-- `comments` (product_id, buyer_id, body)
-- `kyc_submissions` (store_id, doc_url, status, reviewer_notes)
-- `user_roles` (user_id, role app_role) — separate table per security rules
+## 3. Real KYC Verification (Nigeria)
 
-RLS on every table. Vendors see only their store data; buyers see only their orders/likes; landing page reads use a public view of stores (id, name, logo, verified).
+Replace the manual NIN text field with a verified lookup. Recommended providers (pick one):
 
-### Routes
-```text
-/                          Nexa landing (public)
-/login, /signup            Auth
-/onboarding                Brand setup wizard
-/_authenticated/dashboard  Vendor: orders + KPIs (realtime)
-/_authenticated/products   Vendor: list/create/edit
-/_authenticated/orders     Vendor: full orders table
-/_authenticated/customers  Vendor: client list + WhatsApp followup
-/_authenticated/settings   Brand, payouts, KYC
-/s/$slug                   Public store landing page
-/s/$slug/p/$productSlug    Public product page (CTA, +/- selector, buy)
-/track/$token              Guest order tracking
-/_authenticated/me/orders  Buyer order history
-/_authenticated/me/feed    Buyer feed (followed stores)
-/admin/kyc                 Admin: verify badges
-api/public/moniepoint/webhook   Payment callback (signature-verified)
-```
+| Provider | What it verifies | Notes |
+|---|---|---|
+| **Dojah** | NIN, BVN, CAC, driver's license, voter ID, selfie liveness | NG-focused, popular, sandbox available |
+| **Smile ID** | NIN, BVN, biometric face match | Pan-African, strong liveness |
+| **Prembly (Identitypass)** | NIN, BVN, CAC, address | NG-focused, broad coverage |
+| **Youverify** | NIN, BVN, AML screening | Enterprise-leaning |
 
-## 3. Phased Delivery
+Flow:
+1. Vendor enters NIN + uploads selfie in onboarding.
+2. Server fn calls provider → returns name, DOB, photo from official source.
+3. Face-match selfie vs official photo (provider returns confidence score).
+4. Auto-approve if score ≥ threshold; else queue for manual super-admin review.
+5. Result + raw provider payload stored in `kyc_submissions.provider_payload`.
 
-I'll build in this order so each phase is usable on its own:
+I'll wire Dojah by default (cheapest sandbox, NG-first). Requires `DOJAH_APP_ID` + `DOJAH_SECRET_KEY` secrets.
 
-1. **Foundation** — Enable Lovable Cloud, schema + RLS, auth (email + Google), design system (Nexa palette, motion utilities, 3D card primitives).
-2. **Vendor core** — Onboarding wizard, brand, products CRUD with image upload, profit calc, public store page + product page with animated +/- CTA.
-3. **Orders & payments (stubbed)** — Checkout flow, orders dashboard with realtime, Moniepoint stub (mock payment link + manual "mark paid"), receipt generation, WhatsApp share.
-4. **Buyer side** — Optional buyer auth, like/comment/follow, guest tracking link, buyer order history.
-5. **Nexa landing + KYC + admin** — Marketing landing with live signup ticker, FAQ, leaderboards, KYC submission, admin verification, verified badge everywhere.
+## 4. Subscriptions & Revenue
 
-## 4. Design
+New tables:
+- `subscription_plans` (name, price_monthly, price_yearly, features jsonb, max_products, commission_pct)
+- `subscriptions` (store_id, plan_id, status, current_period_end, provider_ref)
+- `platform_revenue` (source: 'commission'|'subscription', order_id?, amount, fee, created_at)
 
-Nexa-branded, dark-leaning premium UI with 3D illustration accents and flow motion. Distinctive type pairing (display + clean sans). Bold copy on CTAs ("Lock it in" / "Add to cart" with animated counter). Glassmorphism on product cards, soft 3D blob backgrounds, framer-motion stagger on grids. Semantic tokens only (no hardcoded colors). I'll commit to one direction since you chose "just build it".
+Revenue dashboard shows: MRR, ARR, commission earned, active subs by plan, churn rate, top-earning vendors. Powered by server-side aggregates.
 
-## 5. Open items I'll handle as defaults (tell me to change any)
-- Payments: stub now, swap to real Moniepoint when you share docs/keys
-- KYC docs: NIN + selfie + business proof, stored in private bucket, manually reviewed by admin role
-- WhatsApp: `wa.me` links (no Business API integration in v1)
-- Receipt: HTML → PDF via client-side render
-- "Brand assets" — I'll generate placeholder Nexa logo/marks unless you upload yours
+Subscription billing via **Paddle** or **Stripe** (you choose — Paddle handles VAT/MoR globally; Stripe is more flexible). Webhook at `/api/public/billing-webhook` updates subscription status.
 
-When you approve, I'll start with Phase 1.
+## 5. Tech Details
+
+- New migration: add `superadmin` to `app_role`, create `admin_audit_log`, `subscription_plans`, `subscriptions`, `platform_revenue`, `coupons`, `announcements`; extend `kyc_submissions` with `provider`, `provider_ref`, `provider_payload jsonb`, `face_match_score`.
+- Server functions in `src/lib/admin.functions.ts` (all gated by superadmin check).
+- KYC provider client in `src/lib/kyc-provider.server.ts`.
+- Charts via `recharts` (already available through shadcn `chart.tsx`).
+- Admin layout: collapsible sidebar with sections grouped (Operations, Finance, Growth, System).
+
+## Questions before I build
+
+1. **KYC provider**: Dojah (recommended), Smile ID, or Prembly? I'll need API keys for whichever you pick.
+2. **Subscription billing**: Paddle or Stripe? Or skip billing integration for now and just track plans manually?
+3. **First super-admin**: which email should I promote to `superadmin` on migration? (Your account email.)
+4. **Scope for this round**: build the full module set above, or start with `Overview + Users + Vendors + Real KYC + Revenue` and add Subscriptions/Coupons/Announcements next?
+
+Once you answer these I'll create the migration, request the secrets, and implement.
