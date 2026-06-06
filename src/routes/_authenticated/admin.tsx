@@ -83,7 +83,7 @@ function AdminLayout() {
                   {section.items.map((n) => (
                     <Link
                       key={n.to}
-                      to={n.to}
+                      to={n.to as any}
                       activeOptions={{ exact: n.exact }}
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-accent/40 hover:text-foreground"
                       activeProps={{ className: "bg-gradient-primary text-primary-foreground shadow-glow" }}
@@ -117,7 +117,7 @@ function AdminLayout() {
           <Outlet />
           <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-border/50 bg-background/80 px-2 py-2 backdrop-blur md:hidden">
             {NAV[0].items.slice(0, 5).map((n) => (
-              <Link key={n.to} to={n.to} className="flex flex-col items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground" activeProps={{ className: "text-foreground" }} activeOptions={{ exact: (n as any).exact }}>
+              <Link key={n.to} to={n.to as any} className="flex flex-col items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground" activeProps={{ className: "text-foreground" }} activeOptions={{ exact: (n as any).exact }}>
                 <n.icon className="h-5 w-5" />
                 {n.label}
               </Link>
