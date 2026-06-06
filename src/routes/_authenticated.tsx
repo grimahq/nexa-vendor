@@ -70,8 +70,8 @@ function AuthedLayout() {
     );
   }
 
-  // Onboarding or buyer-only area: render without vendor sidebar
-  if (loc.pathname === "/onboarding" || isBuyerArea) {
+  // Onboarding, buyer, or admin area: render without vendor sidebar
+  if (loc.pathname === "/onboarding" || isBuyerArea || isAdminArea) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <Outlet />
