@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          after: Json | null
+          before: Json | null
+          created_at: string
+          id: string
+          ip: string | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: []
+      }
+      announcements: {
+        Row: {
+          audience: string
+          body: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          starts_at: string
+          title: string
+          variant: string
+        }
+        Insert: {
+          audience?: string
+          body: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          starts_at?: string
+          title: string
+          variant?: string
+        }
+        Update: {
+          audience?: string
+          body?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          starts_at?: string
+          title?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           body: string
@@ -46,6 +118,48 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          amount_off: number | null
+          code: string
+          created_at: string
+          currency: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_redemptions: number | null
+          percent_off: number | null
+          times_redeemed: number
+        }
+        Insert: {
+          amount_off?: number | null
+          code: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          percent_off?: number | null
+          times_redeemed?: number
+        }
+        Update: {
+          amount_off?: number | null
+          code?: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          percent_off?: number | null
+          times_redeemed?: number
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           buyer_id: string
@@ -77,11 +191,16 @@ export type Database = {
       }
       kyc_submissions: {
         Row: {
+          auto_decision: string | null
           business_doc_url: string | null
           created_at: string
+          face_match_score: number | null
           full_name: string
           id: string
           nin: string
+          provider: string | null
+          provider_payload: Json | null
+          provider_ref: string | null
           reviewed_at: string | null
           reviewer_notes: string | null
           selfie_url: string | null
@@ -89,11 +208,16 @@ export type Database = {
           store_id: string
         }
         Insert: {
+          auto_decision?: string | null
           business_doc_url?: string | null
           created_at?: string
+          face_match_score?: number | null
           full_name: string
           id?: string
           nin: string
+          provider?: string | null
+          provider_payload?: Json | null
+          provider_ref?: string | null
           reviewed_at?: string | null
           reviewer_notes?: string | null
           selfie_url?: string | null
@@ -101,11 +225,16 @@ export type Database = {
           store_id: string
         }
         Update: {
+          auto_decision?: string | null
           business_doc_url?: string | null
           created_at?: string
+          face_match_score?: number | null
           full_name?: string
           id?: string
           nin?: string
+          provider?: string | null
+          provider_payload?: Json | null
+          provider_ref?: string | null
           reviewed_at?: string | null
           reviewer_notes?: string | null
           selfie_url?: string | null
@@ -292,6 +421,42 @@ export type Database = {
           },
         ]
       }
+      platform_revenue: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          note: string | null
+          order_id: string | null
+          source: string
+          store_id: string | null
+          subscription_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          source: string
+          store_id?: string | null
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          source?: string
+          store_id?: string | null
+          subscription_id?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean
@@ -382,13 +547,16 @@ export type Database = {
         Row: {
           brand_color: string | null
           category: string | null
+          commission_pct_override: number | null
           created_at: string
+          featured: boolean
           id: string
           kyc_status: Database["public"]["Enums"]["kyc_status"]
           logo_url: string | null
           name: string
           owner_id: string
           slug: string
+          suspended: boolean
           tagline: string | null
           updated_at: string
           verified: boolean
@@ -397,13 +565,16 @@ export type Database = {
         Insert: {
           brand_color?: string | null
           category?: string | null
+          commission_pct_override?: number | null
           created_at?: string
+          featured?: boolean
           id?: string
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           logo_url?: string | null
           name: string
           owner_id: string
           slug: string
+          suspended?: boolean
           tagline?: string | null
           updated_at?: string
           verified?: boolean
@@ -412,19 +583,132 @@ export type Database = {
         Update: {
           brand_color?: string | null
           category?: string | null
+          commission_pct_override?: number | null
           created_at?: string
+          featured?: boolean
           id?: string
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           logo_url?: string | null
           name?: string
           owner_id?: string
           slug?: string
+          suspended?: boolean
           tagline?: string | null
           updated_at?: string
           verified?: boolean
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          commission_pct: number
+          created_at: string
+          currency: string
+          description: string | null
+          features: Json
+          id: string
+          is_active: boolean
+          max_products: number | null
+          name: string
+          price_monthly: number
+          price_yearly: number
+          slug: string
+          sort_order: number
+          stripe_price_monthly: string | null
+          stripe_price_yearly: string | null
+          updated_at: string
+        }
+        Insert: {
+          commission_pct?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          max_products?: number | null
+          name: string
+          price_monthly?: number
+          price_yearly?: number
+          slug: string
+          sort_order?: number
+          stripe_price_monthly?: string | null
+          stripe_price_yearly?: string | null
+          updated_at?: string
+        }
+        Update: {
+          commission_pct?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          max_products?: number | null
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          slug?: string
+          sort_order?: number
+          stripe_price_monthly?: string | null
+          stripe_price_yearly?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          billing_cycle: string
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          store_id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          store_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          store_id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -472,6 +756,12 @@ export type Database = {
         | "delivered"
         | "cancelled"
       payment_status: "pending" | "success" | "failed"
+      subscription_status:
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "incomplete"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -611,6 +901,13 @@ export const Constants = {
         "cancelled",
       ],
       payment_status: ["pending", "success", "failed"],
+      subscription_status: [
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "incomplete",
+      ],
     },
   },
 } as const
