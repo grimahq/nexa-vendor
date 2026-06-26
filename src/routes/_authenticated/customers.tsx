@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Package, Phone, Search, Users } from "lucide-react";
+import { MessageCircle, Package, Phone, Search, ShoppingBag, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({ meta: [{ title: "Customers — Nexa" }] }),
@@ -15,6 +15,7 @@ type OrderRow = {
   id: string;
   buyer_name: string;
   buyer_phone: string;
+  buyer_email: string | null;
   total: number;
   items: { title: string; qty: number; price: number }[];
   created_at: string;
@@ -27,6 +28,8 @@ type Customer = {
   total: number;
   lastSeen: string;
   items: string[];
+  quantity: number;
+  email: string | null;
 };
 
 function CustomersPage() {
@@ -45,7 +48,7 @@ function CustomersPage() {
       }
       const { data } = await supabase
         .from("orders")
-        .select("id,buyer_name,buyer_phone,total,items,created_at")
+        .select("id,buyer_name,buyer_phone,buyer_email,total,items,created_at")
         .eq("store_id", store.id)
         .order("created_at", { ascending: false });
       setOrders((data ?? []) as unknown as OrderRow[]);
@@ -64,11 +67,15 @@ function CustomersPage() {
         total: 0,
         lastSeen: order.created_at,
         items: [],
+        quantity: 0,
+        email: order.buyer_email,
       };
       current.orders += 1;
       current.total += Number(order.total) || 0;
       current.lastSeen = current.lastSeen > order.created_at ? current.lastSeen : order.created_at;
       current.items = Array.from(new Set([...current.items, ...order.items.map((item) => item.title)])).slice(0, 6);
+      current.quantity += order.items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+      current.email = current.email || order.buyer_email;
       grouped.set(key, current);
     }
     return Array.from(grouped.values()).filter((customer) => {
@@ -84,7 +91,7 @@ function CustomersPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Saved automatically from orders</p>
+          <p className="text-sm text-muted-foreground">Saved automatically from paid and WhatsApp orders</p>
           <h1 className="hero-heading font-display text-3xl font-bold sm:text-4xl">Customers</h1>
         </div>
         <div className="relative w-full sm:w-72">
@@ -110,7 +117,8 @@ function CustomersPage() {
       ) : (
         <div className="mt-6 grid gap-3">
           {customers.map((customer, index) => {
-            const message = encodeURIComponent(`Hi ${customer.name}, thanks for ordering ${customer.items.slice(0, 2).join(" and ")} from us. Would you like help with a new order?`);
+            const purchased = customer.items.slice(0, 3).join(", ");
+            const message = encodeURIComponent(`Hi ${customer.name}, thank you for buying ${purchased || "from us"}. We have new stock and offers today — would you like me to send options?`);
             const phone = customer.phone.replace(/\D/g, "");
             return (
               <motion.div key={customer.phone} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }} className="rounded-3xl border border-border/60 bg-card/80 p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated sm:p-5">
@@ -122,11 +130,14 @@ function CustomersPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="truncate font-display text-lg font-semibold">{customer.name}</p>
-                        <p className="text-sm text-muted-foreground">{customer.phone}</p>
+                        <p className="text-sm text-muted-foreground">{customer.phone}{customer.email ? ` · ${customer.email}` : ""}</p>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {customer.items.map((item) => <span key={item} className="rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">{item}</span>)}
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                      <ShoppingBag className="h-3.5 w-3.5" /> {customer.quantity} item{customer.quantity === 1 ? "" : "s"} purchased
                     </div>
                   </div>
                   <div className="flex flex-col gap-3 sm:items-end">
@@ -134,11 +145,17 @@ function CustomersPage() {
                       <p className="font-display text-xl font-bold text-primary">₦{customer.total.toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">{customer.orders} order{customer.orders === 1 ? "" : "s"} · {new Date(customer.lastSeen).toLocaleDateString()}</p>
                     </div>
-                    <Button asChild variant="outline" className="rounded-2xl">
-                      <a href={`https://wa.me/${phone}?text=${message}`} target="_blank" rel="noreferrer">
-                        <MessageCircle className="h-4 w-4" /> Follow up
-                      </a>
-                    </Button>
+                    {phone ? (
+                      <Button asChild variant="outline" className="rounded-2xl">
+                        <a href={`https://wa.me/${phone}?text=${message}`} target="_blank" rel="noreferrer">
+                          <MessageCircle className="h-4 w-4" /> Follow up
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" className="rounded-2xl" disabled>
+                        <MessageCircle className="h-4 w-4" /> No WhatsApp
+                      </Button>
+                    )}
                   </div>
                 </div>
               </motion.div>
