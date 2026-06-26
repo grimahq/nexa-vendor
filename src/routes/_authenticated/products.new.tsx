@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, ArrowRight, Check, ImagePlus, Link2, PackageCheck, Sparkles, Upload, WandSparkles, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Check, ImagePlus, Link2, PackageCheck, Sparkles, Upload, WandSparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/products/new")({
@@ -42,6 +42,7 @@ function NewProduct() {
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const profit = (Number(sellPrice) || 0) - (Number(costPrice) || 0);
   const progress = useMemo(() => ((step + 1) / 4) * 100, [step]);
@@ -94,6 +95,7 @@ function NewProduct() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setSaveError(null);
     if (!storeId) return toast.error("No store yet");
     if (!title.trim()) return toast.error("Product title is required");
     if ((Number(sellPrice) || 0) <= 0) return toast.error("Selling price must be greater than zero");
@@ -116,7 +118,9 @@ function NewProduct() {
       toast.success("Product added");
       nav({ to: "/products", replace: true });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not add product");
+      const message = error instanceof Error ? error.message : "Could not add product";
+      setSaveError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -200,7 +204,13 @@ function NewProduct() {
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-success/15 text-success"><Check className="h-5 w-5" /></div>
                   <div><h2 className="font-display text-2xl font-semibold">Ready to publish?</h2><p className="mt-1 text-sm text-muted-foreground">You can edit or hide this product later.</p></div>
                   <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-background/70 p-4"><div><p className="font-medium">Visible in store</p><p className="text-xs text-muted-foreground">Turn off to save as draft.</p></div><Switch checked={active} onCheckedChange={setActive} /></div>
-                  <div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setStep(2)} className="h-12 rounded-2xl"><ArrowLeft className="h-4 w-4" /></Button><Button type="submit" size="lg" disabled={saving} className="h-12 flex-1 rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90">{saving ? "Saving…" : "Add product"}</Button></div>
+                  {saveError && (
+                    <div className="flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{saveError}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setStep(2)} className="h-12 rounded-2xl"><ArrowLeft className="h-4 w-4" /></Button><Button type="submit" size="lg" disabled={saving || uploading} className="h-12 flex-1 rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow hover:opacity-90">{saving ? "Saving product…" : uploading ? "Finish upload first" : "Add product"}</Button></div>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Package, ShoppingCart, Eye, ExternalLink, Copy } from "lucide-react";
+import { Package, ShoppingCart, Eye, ExternalLink, Copy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -72,7 +72,7 @@ function Dashboard() {
         <StatCard icon={Eye} label="Total views" value={stats.views} />
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid gap-4 sm:grid-cols-3">
         <Link to="/products" className="card-3d glass rounded-3xl p-6 transition-shadow hover:shadow-elevated">
           <Package className="h-6 w-6 text-primary" />
           <h3 className="mt-3 text-lg font-semibold">Add products</h3>
@@ -82,6 +82,11 @@ function Dashboard() {
           <ShoppingCart className="h-6 w-6 text-primary" />
           <h3 className="mt-3 text-lg font-semibold">Manage orders</h3>
           <p className="mt-1 text-sm text-muted-foreground">Track, confirm and fulfill incoming orders in real time.</p>
+        </Link>
+        <Link to="/customers" className="card-3d glass rounded-3xl p-6 transition-shadow hover:shadow-elevated">
+          <Users className="h-6 w-6 text-primary" />
+          <h3 className="mt-3 text-lg font-semibold">Customer follow-up</h3>
+          <p className="mt-1 text-sm text-muted-foreground">See phone numbers, purchases, and send WhatsApp messages.</p>
         </Link>
       </div>
     </div>
